@@ -1,0 +1,12 @@
+{
+  "restaurants": [
+    { "name": "김치찌개집", "category": "한식", "walkMin": 3, "menu": "김치찌개", "price": 9000 },
+    { "name": "돈까스 가게", "category": "일식", "walkMin": 5, "menu": "로스카츠", "price": 11000 },
+    { "name": "짬뽕 맛집", "category": "중식", "walkMin": 7, "menu": "짬뽕", "price": 10000 },
+    { "name": "샐러드 바", "category": "샐러드", "walkMin": 4, "menu": "닭가슴살 샐러드", "price": 9500 },
+    { "name": "국밥집", "category": "한식", "walkMin": 6, "menu": "돼지국밥", "price": 9000 },
+    { "name": "쌀국수", "category": "아시안", "walkMin": 8, "menu": "양지 쌀국수", "price": 11000 },
+    { "name": "햄버거", "category": "양식", "walkMin": 5, "menu": "치즈버거 세트", "price": 10500 },
+    { "name": "편의점", "category": "간편식", "walkMin": 1, "menu": "도시락", "price": 5000 }
+  ]
+}

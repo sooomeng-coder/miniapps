@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>점심 룰렛</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍚</text></svg>">
+  <style>
+    :root {
+      --bg: #faf7f2;
+      --card: #ffffff;
+      --text: #1f1d1a;
+      --dim: #7a746b;
+      --line: #e8e2d8;
+      --accent: #f26b1d;
+      --accent-text: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #161412;
+        --card: #211e1b;
+        --text: #f3efe9;
+        --dim: #9d968c;
+        --line: #35302b;
+        --accent: #ff8a3d;
+        --accent-text: #1a1008;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      display: flex;
+      justify-content: center;
+    }
+    main {
+      width: 100%;
+      max-width: 440px;
+      padding: 40px 16px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    h1 { margin: 0; font-size: 22px; text-align: center; }
+
+    .filters { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+    .chip {
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--dim);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+    .slot {
+      background: var(--card);
+      border: 2px solid var(--line);
+      border-radius: 20px;
+      padding: 32px 20px;
+      text-align: center;
+      min-height: 190px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+      transition: border-color .2s;
+    }
+    .slot.done { border-color: var(--accent); }
+    .label { font-size: 14px; color: var(--accent); font-weight: 700; min-height: 1.2em; }
+    .name { font-size: 34px; font-weight: 800; line-height: 1.2; word-break: keep-all; }
+    .meta { font-size: 15px; color: var(--dim); line-height: 1.6; }
+
+    button.spin {
+      border: 0;
+      border-radius: 16px;
+      padding: 18px;
+      font-size: 18px;
+      font-weight: 700;
+      background: var(--accent);
+      color: var(--accent-text);
+      cursor: pointer;
+    }
+    button.spin:disabled { opacity: .5; cursor: default; }
+    .note { text-align: center; font-size: 13px; color: var(--dim); }
+    .note a { color: inherit; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>🍚 오늘 점심 뭐 먹지?</h1>
+    <div class="filters" id="filters"></div>
+
+    <section class="slot" id="slot" aria-live="polite">
+      <div class="label" id="label"></div>
+      <div class="name" id="name">버튼을 눌러보세요</div>
+      <div class="meta" id="meta"></div>
+    </section>
+
+    <button class="spin" id="spin" disabled>불러오는 중…</button>
+    <p class="note" id="note"></p>
+  </main>
+
+  <script>
+    // 배포 시에는 같은 폴더의 data/, 로컬에서 web/ 폴더를 열 때는 ../data/
+    const DATA_PATHS = ["data/restaurants.json", "../data/restaurants.json"];
+    const SPIN_INTERVAL_MS = 60;
+    const SLOWDOWN_FACTOR = 1.15;
+    const STOP_INTERVAL_MS = 420;
+
+    const $ = (id) => document.getElementById(id);
+    let restaurants = [];
+    let category = "전체";
+    let state = "idle"; // idle | spinning | stopping | result
+    let current = -1;
+    let lastPicked = -1;
+    let stepMs = SPIN_INTERVAL_MS;
+    let timer = null;
+
+    const pool = () => restaurants
+      .map((r, i) => i)
+      .filter((i) => category === "전체" || restaurants[i].category === category);
+
+    function randomOther(exclude) {
+      const ids = pool();
+      if (ids.length < 2) return ids[0] ?? -1;
+      let i;
+      do { i = ids[Math.floor(Math.random() * ids.length)]; } while (i === exclude);
+      return i;
+    }
+
+    function show(i, done) {
+      const r = restaurants[i];
+      if (!r) return;
+      const price = r.price ? ` ${r.price.toLocaleString("ko-KR")}원` : "";
+      $("label").textContent = done ? "오늘은 여기!" : "";
+      $("name").textContent = r.name;
+      $("meta").textContent = `${r.category} · 도보 ${r.walkMin}분 · ${r.menu}${price}`;
+      $("slot").classList.toggle("done", done);
+    }
+
+    function step() {
+      current = randomOther(current);
+      if (state === "stopping") {
+        stepMs *= SLOWDOWN_FACTOR;
+        if (stepMs > STOP_INTERVAL_MS) {
+          // 직전 결과와 같은 곳이 연속으로 나오지 않게
+          if (current === lastPicked && pool().length > 1) current = randomOther(lastPicked);
+          lastPicked = current;
+          state = "result";
+          show(current, true);
+          updateButton();
+          return;
+        }
+      }
+      show(current, false);
+      timer = setTimeout(step, stepMs);
+    }
+
+    function updateButton() {
+      const btn = $("spin");
+      btn.disabled = state === "stopping" || pool().length === 0;
+      btn.textContent = {
+        idle: "🎲 돌리기",
+        spinning: "✋ 멈추기",
+        stopping: "두구두구…",
+        result: "🎲 다시 돌리기",
+      }[state];
+    }
+
+    $("spin").addEventListener("click", () => {
+      if (state === "idle" || state === "result") {
+        state = "spinning";
+        stepMs = SPIN_INTERVAL_MS;
+        clearTimeout(timer);
+        step();
+      } else if (state === "spinning") {
+        state = "stopping";
+      }
+      updateButton();
+    });
+
+    function renderFilters() {
+      const cats = ["전체", ...new Set(restaurants.map((r) => r.category))];
+      $("filters").replaceChildren(...cats.map((c) => {
+        const b = document.createElement("button");
+        b.className = "chip";
+        b.textContent = c;
+        b.setAttribute("aria-pressed", c === category);
+        b.addEventListener("click", () => {
+          if (state === "spinning" || state === "stopping") return;
+          category = c;
+          renderFilters();
+          updateButton();
+        });
+        return b;
+      }));
+    }
+
+    async function load() {
+      for (const path of DATA_PATHS) {
+        try {
+          const res = await fetch(path, { cache: "no-store" });
+          if (res.ok) return (await res.json()).restaurants;
+        } catch {}
+      }
+      throw new Error("식당 데이터를 불러오지 못했어요.");
+    }
+
+    load()
+      .then((list) => {
+        restaurants = list;
+        $("note").textContent = `식당 ${list.length}곳`;
+        renderFilters();
+        updateButton();
+      })
+      .catch((e) => { $("name").textContent = e.message; });
+  </script>
+</body>
+</html>

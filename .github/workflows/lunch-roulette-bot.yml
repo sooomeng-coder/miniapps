@@ -1,0 +1,25 @@
+# 평일 점심 전에 구글 챗 방에 오늘의 메뉴 추천 메시지 보내기
+name: lunch-roulette bot
+
+on:
+  schedule:
+    # 평일 11:20 (한국시간) = 02:20 UTC. GitHub 사정으로 몇 분 늦어질 수 있음
+    - cron: "20 2 * * 1-5"
+  workflow_dispatch: # Actions 탭에서 수동 실행(테스트용)
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Post to Google Chat
+        run: node lunch-roulette/bot/post-lunch.mjs
+        env:
+          GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
+          ROULETTE_URL: https://sooomeng-coder.github.io/miniapps/lunch-roulette/

@@ -1,0 +1,45 @@
+# lunch-roulette 웹 룰렛을 GitHub Pages로 배포
+# 주소: https://sooomeng-coder.github.io/miniapps/lunch-roulette/
+name: lunch-roulette pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lunch-roulette/web/**"
+      - "lunch-roulette/data/**"
+      - ".github/workflows/lunch-roulette-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build site
+        run: |
+          mkdir -p _site/lunch-roulette
+          cp -r lunch-roulette/web/. _site/lunch-roulette/
+          cp -r lunch-roulette/data _site/lunch-roulette/data
+          # 루트로 들어오면 룰렛으로 이동
+          echo '<meta http-equiv="refresh" content="0; url=lunch-roulette/">' > _site/index.html
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
