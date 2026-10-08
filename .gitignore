@@ -1,0 +1,24 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Dependencies / build
+node_modules/
+dist/
+build/
+.next/
+__pycache__/
+*.pyc
+.venv/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
