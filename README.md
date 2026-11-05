@@ -7,6 +7,7 @@
 | 앱 | 설명 | 상태 | 링크 |
 | --- | --- | --- | --- |
 | [lunch-roulette](./lunch-roulette) | 점심 메뉴 랜덤 추천 (웹 · 구글 챗 봇 · ESP32 버튼) | 개발 중 | [룰렛](https://sooomeng-coder.github.io/miniapps/lunch-roulette/) |
+| [interior-tf](./interior-tf) | 턴키 인테리어 준비용 Claude TF 작업실 (명령창 + 팀원 6명 + 프로젝트 보드) | 사용 중 | [TF 작업실](https://claude.ai/artifact/Q7UgyYAoX6ucPwT3obKXx2) |
 
 <!-- 예시: | [timer](./timer) | 뽀모도로 타이머 | 개발 중 | [데모](https://...) | -->
 

@@ -1,0 +1,497 @@
+<title>우리집 인테리어 TF</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 평면도(TF가 일하는 방들) + 오른쪽 명령창/작업 로그, 아래 프로젝트 보드 탭 */
+:root{
+  --bg:#ECEFEA; --surface:#FFFFFF; --sunk:#F5F7F3; --ink:#1D2320; --muted:#66706A; --line:#D3D9D1; --wall:#2A312D;
+  --accent:#2C58C9; --accent-ink:#FFFFFF; --ok:#2F7D4F; --warn:#B7791F; --bad:#B4413A;
+  --a-pm:#2C58C9; --a-research:#0F8B8D; --a-contract:#7A4FB5; --a-cost:#B7791F; --a-visual:#C2477A; --a-record:#55704B;
+  --sans:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151917; --surface:#1E2421; --sunk:#191E1B; --ink:#E6EBE6; --muted:#9AA49D; --line:#323A35; --wall:#AEB8B1;
+  --accent:#7D9EF2; --accent-ink:#0E1630; --ok:#6BC28E; --warn:#E3B05C; --bad:#E58A83;
+  --a-pm:#7D9EF2; --a-research:#4EC3C4; --a-contract:#B394E3; --a-cost:#E3B05C; --a-visual:#EE85B0; --a-record:#9BBE8D; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151917; --surface:#1E2421; --sunk:#191E1B; --ink:#E6EBE6; --muted:#9AA49D; --line:#323A35; --wall:#AEB8B1;
+  --accent:#7D9EF2; --accent-ink:#0E1630; --ok:#6BC28E; --warn:#E3B05C; --bad:#E58A83;
+  --a-pm:#7D9EF2; --a-research:#4EC3C4; --a-contract:#B394E3; --a-cost:#E3B05C; --a-visual:#EE85B0; --a-record:#9BBE8D; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{margin:0;text-wrap:balance}
+.mono{font-family:var(--mono)}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.top h1{font-size:26px;font-weight:700;letter-spacing:-.01em}
+.top p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;width:100%}
+.spec label{display:flex;flex-direction:column;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;min-width:110px}
+.spec input{border:0;background:transparent;padding:0;width:100%;font-weight:500;outline:none}
+.banner{background:var(--sunk);border:1px dashed var(--line);border-radius:8px;padding:10px 14px;color:var(--muted)}
+.banner[hidden]{display:none}
+
+/* main grid */
+.main{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.main{grid-template-columns:minmax(0,1fr)}}
+
+/* floor plan */
+.planbox{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.planhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.plan{position:relative;display:grid;grid-template-columns:1fr 1.25fr 1fr;grid-template-rows:auto auto auto;
+  grid-template-areas:"research pm pm" "record pm pm" "visual contract cost";border:4px solid var(--wall);background:var(--sunk)}
+.room{position:relative;border:1.5px solid var(--wall);margin:-0.75px;padding:12px;min-height:150px;display:flex;flex-direction:column;gap:8px;min-width:0;background:var(--surface);transition:background .3s}
+.room[data-agent="pm"]{grid-area:pm;min-height:200px}
+.room[data-agent="research"]{grid-area:research}.room[data-agent="record"]{grid-area:record}
+.room[data-agent="visual"]{grid-area:visual}.room[data-agent="contract"]{grid-area:contract}.room[data-agent="cost"]{grid-area:cost}
+.room::after{content:"";position:absolute;width:28px;height:28px;border:1.5px solid var(--line);border-left:0;border-bottom:0;border-radius:0 28px 0 0;right:10px;bottom:-1px;opacity:.7}
+.room.working{background:color-mix(in srgb,var(--c) 9%,var(--surface))}
+.roomtag{display:flex;justify-content:space-between;gap:6px;font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.04em}
+.who{display:flex;align-items:center;gap:10px}
+.av{width:38px;height:38px;flex:none;border-radius:50%;background:var(--c);color:var(--surface);display:grid;place-items:center;font-weight:700;font-size:15px;position:relative}
+.room.working .av::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--c);animation:pulse 1.4s ease-out infinite}
+@keyframes pulse{from{opacity:.9;transform:scale(.9)}to{opacity:0;transform:scale(1.25)}}
+.who b{display:block;font-size:14px}
+.who small{display:block;color:var(--muted);font-size:12px;line-height:1.35}
+.pill{font-family:var(--mono);font-size:10.5px;padding:2px 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.room.working .pill{border-color:var(--c);color:var(--c)}
+.room.done .pill{border-color:var(--ok);color:var(--ok)}
+.bubble{font-size:12.5px;color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-height:150px;overflow:auto;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;flex:1}
+.bubble:empty{display:none}
+.room[data-agent="pm"] .bubble{max-height:190px}
+#wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+#wires path{fill:none;stroke-width:2.5;stroke-dasharray:7 6;animation:flow .8s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-26}}
+@media (max-width:640px){
+  .plan{grid-template-columns:1fr 1fr;grid-template-areas:"pm pm" "research record" "visual contract" "cost cost"}
+  .room{min-height:130px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* command + log */
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.cmd{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.cmd textarea{width:100%;min-height:92px;resize:vertical;border:1px solid var(--line);border-radius:8px;background:var(--sunk);padding:10px 12px;line-height:1.5}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:7px 12px;font-weight:500}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.5;cursor:default}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--sunk);border-radius:99px;padding:4px 10px;font-size:12px;color:var(--ink)}
+.chip.ag{border-color:var(--c);color:var(--c);background:transparent}
+.hint{font-size:12px;color:var(--muted)}
+.status{font-size:12.5px;color:var(--muted);min-height:1.4em}
+.status.err{color:var(--bad)}
+.log{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;max-height:560px;min-height:0}
+.loglist{overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:4px}
+.entry{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start}
+.entry .dot{width:22px;height:22px;border-radius:50%;background:var(--c);color:var(--surface);font-size:11px;font-weight:700;display:grid;place-items:center;margin-top:2px}
+.entry.me .dot{background:var(--ink)}
+.entry .meta{font-size:11.5px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap}
+.entry .meta b{color:var(--c);font-weight:500}
+.entry.me .meta b{color:var(--ink)}
+.entry .txt{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}
+.entry.handoff .txt{color:var(--muted);font-style:italic}
+.empty{color:var(--muted);font-size:13px;padding:6px 0}
+
+/* board */
+.board{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tab{border:0;background:transparent;padding:8px 12px;border-bottom:2px solid transparent;color:var(--muted);font-weight:500;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-color:var(--accent)}
+.tab .n{font-family:var(--mono);font-size:11px;margin-left:4px;color:var(--muted)}
+.tblwrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:500;color:var(--muted);font-size:11.5px;font-family:var(--mono);letter-spacing:.03em;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:700;border-bottom:0}
+.own{font-family:var(--mono);font-size:11px;color:var(--c);white-space:nowrap}
+.todo{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line)}
+.todo input{margin-top:4px;accent-color:var(--accent)}
+.todo.done span{color:var(--muted);text-decoration:line-through}
+.todo span{flex:1;min-width:0}
+.x{border:0;background:transparent;color:var(--muted);padding:0 4px;font-size:16px;line-height:1}
+.note{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.note p{margin:0;white-space:pre-wrap;font-size:13px}
+.addrow{display:flex;gap:6px;flex-wrap:wrap}
+.addrow input{flex:1 1 140px;min-width:0;border:1px solid var(--line);border-radius:6px;background:var(--sunk);padding:6px 9px}
+.stack{display:flex;flex-direction:column;gap:8px}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="label">Turnkey project · TF room</div>
+      <h1>우리집 인테리어 TF</h1>
+      <p>명령창에 지시하면 총괄 PM이 팀원에게 일을 나눠요. 팀원이 정리한 업체·견적·할 일·회의록은 아래 보드에 쌓입니다.</p>
+    </div>
+    <div class="spec" id="spec">
+      <label><span class="label">전용면적</span><input id="f-area" placeholder="예: 84㎡ (32평)"></label>
+      <label><span class="label">총예산</span><input id="f-budget" placeholder="예: 5,000만원"></label>
+      <label><span class="label">잔금·공사 가능일</span><input id="f-start" placeholder="예: 2027-01-20"></label>
+      <label><span class="label">입주 희망일</span><input id="f-movein" placeholder="예: 2027-03-01"></label>
+      <label><span class="label">원하는 스타일</span><input id="f-style" placeholder="예: 화이트 우드, 미니멀"></label>
+    </div>
+  </header>
+
+  <div class="banner" id="banner" hidden></div>
+
+  <section class="main">
+    <div class="planbox">
+      <div class="planhead">
+        <h2 style="font-size:16px">TF 작업실</h2>
+        <span class="label" id="planstate">대기 중</span>
+      </div>
+      <div class="plan" id="plan">
+        <svg id="wires" aria-hidden="true"></svg>
+      </div>
+    </div>
+
+    <aside class="side">
+      <form class="cmd" id="cmdform">
+        <div class="row" style="justify-content:space-between">
+          <h2 style="font-size:16px">명령창</h2>
+          <span class="hint">⌘/Ctrl + Enter로 보내기</span>
+        </div>
+        <textarea id="cmd" placeholder="예: 턴키 업체 알아보는 것부터 해야 할 일 순서대로 정리해줘&#10;@비용 32평 턴키 견적에 들어가는 항목 쪼개줘"></textarea>
+        <div class="chips" id="agentchips"></div>
+        <div class="row">
+          <button class="btn primary" id="send" type="submit">TF에 지시하기</button>
+          <button class="btn" id="stop" type="button" hidden>멈추기</button>
+        </div>
+        <div class="status" id="status" role="status"></div>
+        <div class="chips" id="presets"></div>
+      </form>
+
+      <div class="log">
+        <div class="row" style="justify-content:space-between">
+          <h2 style="font-size:16px">작업 로그</h2>
+          <span class="label" id="logcount"></span>
+        </div>
+        <div class="loglist" id="loglist"><div class="empty">아직 지시가 없어요. 위 예시를 눌러 첫 지시를 내려보세요.</div></div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="board">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="font-size:16px">프로젝트 보드</h2>
+      <span class="hint">팀원이 정리한 내용이 자동으로 쌓여요. 직접 추가·수정도 돼요.</span>
+    </div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div id="panel"></div>
+  </section>
+</div>
+
+<script>
+(function(){
+const AGENTS = {
+  pm:       {name:"총괄 PM", room:"거실", dim:"4.8 × 5.6m", ch:"총", role:"일을 나누고 일정과 우선순위를 잡아요",
+             desc:"전체 일정과 우선순위를 관리하고 팀원에게 일을 나눈다."},
+  research: {name:"리서치", room:"현관", dim:"1.8 × 2.1m", ch:"찾", role:"업체·자재·레퍼런스 찾는 법을 정리해요",
+             desc:"턴키 업체 후보를 찾는 경로(플랫폼, 지역 커뮤니티, 시공 사례 확인법), 자재·제품 후보, 레퍼런스 키워드를 정리한다. 업체를 걸러낼 기준과 질문 리스트를 만든다."},
+  contract: {name:"계약", room:"안방", dim:"3.6 × 4.2m", ch:"계", role:"계약서·조항·하자보수를 챙겨요",
+             desc:"실내건축 표준계약서 기준으로 계약 조항, 대금 지급 비율, 공사 기간·지체상금, 하자보수 기간과 범위, 추가공사 처리, 관리사무소 공사 신고·이웃 동의 등 법적·행정 절차를 챙긴다."},
+  cost:     {name:"비용", room:"주방", dim:"3.0 × 3.9m", ch:"비", role:"견적 항목·예산 배분·견적 비교",
+             desc:"턴키 견적을 공정별(철거, 설비, 전기, 목공, 도장/필름, 타일, 도배, 바닥, 욕실, 주방, 조명, 가구 등)로 쪼개고 예산 배분과 견적 비교 기준을 만든다. 금액은 범위로 말하고 근거를 단다."},
+  visual:   {name:"비주얼", room:"작은방", dim:"2.7 × 3.0m", ch:"보", role:"스타일·컬러·자재 톤을 맞춰요",
+             desc:"의뢰인의 레퍼런스와 취향을 스타일 키워드, 컬러 팔레트, 바닥·벽·문·주방 마감 자재 방향으로 정리하고 업체에 전달할 디자인 브리프를 만든다."},
+  record:   {name:"기록·연락", room:"서재", dim:"2.4 × 3.0m", ch:"기", role:"회의록·업체 연락처·할 일 담당",
+             desc:"미팅·상담 내용을 회의록으로 정리하고, 업체 연락처와 진행 상태를 관리하며, 다음 할 일을 담당자와 함께 정리한다."}
+};
+const IDS = Object.keys(AGENTS);
+const ALIAS = {"총괄":"pm","pm":"pm","리서치":"research","찾기":"research","계약":"contract","비용":"cost","견적":"cost","비주얼":"visual","디자인":"visual","기록":"record","연락":"record","회의록":"record"};
+const PRESETS = [
+  "턴키 업체 알아보는 것부터 입주까지 해야 할 일 순서대로 정리해줘",
+  "@비용 32평 아파트 턴키 견적 항목을 공정별로 쪼개줘",
+  "@계약 턴키 계약 전에 꼭 확인할 조항 체크리스트 만들어줘",
+  "@리서치 괜찮은 턴키 업체 고르는 기준이랑 상담 때 물어볼 질문 정리해줘",
+  "@비주얼 화이트 우드 미니멀 스타일로 자재·컬러 방향 잡아줘"
+];
+const EMPTY_BOARD = {project:{}, todos:[], vendors:[], costs:[], notes:[], decisions:[]};
+
+let db=null, sample=null, board=structuredClone(EMPTY_BOARD), logs=[], localLogs=[];
+let running=false, ctl=null, writing=Promise.resolve();
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cvar=id=>`--c:var(--a-${id})`;
+
+/* ---------- rooms ---------- */
+const plan=$("#plan");
+IDS.forEach(id=>{
+  const a=AGENTS[id], el=document.createElement("div");
+  el.className="room"; el.dataset.agent=id; el.style.cssText=cvar(id);
+  el.innerHTML=`<div class="roomtag"><span>${a.room}</span><span>${a.dim}</span></div>
+    <div class="who"><div class="av">${a.ch}</div><div style="min-width:0;flex:1"><b>${a.name}</b><small>${a.role}</small></div><span class="pill">대기</span></div>
+    <div class="bubble"></div>`;
+  plan.appendChild(el);
+});
+const roomEl=id=>plan.querySelector(`.room[data-agent="${id}"]`);
+function setRoom(id,state,text){
+  const r=roomEl(id); if(!r) return;
+  r.classList.toggle("working",state==="working"); r.classList.toggle("done",state==="done");
+  r.querySelector(".pill").textContent={working:"작업 중",done:"완료",idle:"대기"}[state]||"대기";
+  if(text!==undefined) r.querySelector(".bubble").textContent=text;
+}
+function wire(from,to){
+  const svg=$("#wires"), pr=plan.getBoundingClientRect();
+  const c=id=>{const b=roomEl(id).querySelector(".av").getBoundingClientRect();return [b.left-pr.left+b.width/2,b.top-pr.top+b.height/2]};
+  const [x1,y1]=c(from),[x2,y2]=c(to), mx=(x1+x2)/2, my=Math.min(y1,y2)-30;
+  const p=document.createElementNS("http://www.w3.org/2000/svg","path");
+  p.setAttribute("d",`M${x1},${y1} Q${mx},${my} ${x2},${y2}`);
+  p.setAttribute("stroke",getComputedStyle(roomEl(from)).getPropertyValue("--c")||"currentColor");
+  p.style.stroke=`var(--a-${from})`;
+  svg.appendChild(p); setTimeout(()=>p.remove(),2600);
+}
+
+/* ---------- chips ---------- */
+const ta=$("#cmd");
+IDS.forEach(id=>{
+  const b=document.createElement("button"); b.type="button"; b.className="chip ag"; b.style.cssText=cvar(id);
+  b.textContent="@"+AGENTS[id].name.split("·")[0]; b.title=AGENTS[id].name+"에게 바로 지시";
+  b.onclick=()=>{ta.value="@"+AGENTS[id].name.split("·")[0]+" "+ta.value.replace(/^@\S+\s*/,""); ta.focus();};
+  $("#agentchips").appendChild(b);
+});
+PRESETS.forEach(t=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=t;b.onclick=()=>{ta.value=t;ta.focus()};$("#presets").appendChild(b)});
+ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();$("#cmdform").requestSubmit()}});
+
+/* ---------- board ---------- */
+const TABS=[["todos","할 일"],["vendors","업체·연락처"],["costs","예산·견적"],["notes","회의록"],["decisions","결정사항"]];
+let tab="todos"; try{tab=localStorage.getItem("tf-tab")||tab}catch(e){}
+function renderTabs(){
+  $("#tabs").innerHTML=TABS.map(([k,l])=>`<button class="tab" role="tab" data-k="${k}" aria-selected="${k===tab}">${l}<span class="n">${(board[k]||[]).length}</span></button>`).join("");
+}
+$("#tabs").onclick=e=>{const b=e.target.closest(".tab");if(!b)return;tab=b.dataset.k;try{localStorage.setItem("tf-tab",tab)}catch(e){}renderBoard()};
+const ownTag=o=>AGENTS[o]?`<span class="own" style="${cvar(o)}">${AGENTS[o].name}</span>`:(o?`<span class="own">${esc(o)}</span>`:"");
+function renderBoard(){
+  renderTabs();
+  const P=$("#panel"), list=board[tab]||[];
+  let h="";
+  if(tab==="todos"){
+    h=`<div class="stack">${list.length?list.map((t,i)=>`<div class="todo ${t.done?"done":""}"><input type="checkbox" id="td${i}" data-i="${i}" ${t.done?"checked":""}><span><label for="td${i}">${esc(t.text)}</label></span>${ownTag(t.owner)}<button class="x" data-del="${i}" aria-label="삭제">×</button></div>`).join(""):`<div class="empty">할 일이 없어요. TF에 "해야 할 일 정리해줘"라고 지시해보세요.</div>`}
+      <div class="addrow"><input id="add-todo" placeholder="할 일 직접 추가"><button class="btn" data-add="todos">추가</button></div></div>`;
+  }else if(tab==="vendors"){
+    h=`<div class="tblwrap"><table><thead><tr><th>업체</th><th>분야</th><th>연락처</th><th>상태</th><th>메모</th><th></th></tr></thead><tbody>${list.length?list.map((v,i)=>`<tr><td><b>${esc(v.name)}</b></td><td>${esc(v.type)}</td><td class="mono">${esc(v.contact)}</td><td>${esc(v.status)}</td><td>${esc(v.note)}</td><td><button class="x" data-del="${i}" aria-label="삭제">×</button></td></tr>`).join(""):`<tr><td colspan="6" class="empty">상담한 업체를 아래에 적거나, 명령창에 "@기록 ○○인테리어 010-… 다음주 실측 예정"처럼 알려주세요.</td></tr>`}</tbody></table></div>
+      <div class="addrow"><input id="v-name" placeholder="업체명"><input id="v-type" placeholder="분야 (턴키/목공…)"><input id="v-contact" placeholder="연락처·담당자"><input id="v-status" placeholder="상태 (상담/견적/계약)"><button class="btn" data-add="vendors">추가</button></div>`;
+  }else if(tab==="costs"){
+    const sum=list.reduce((s,c)=>s+(Number(c.amount)||0),0);
+    h=`<div class="tblwrap"><table><thead><tr><th>항목</th><th style="text-align:right">금액(만원)</th><th>업체·근거</th><th>메모</th><th></th></tr></thead><tbody>${list.length?list.map((c,i)=>`<tr><td>${esc(c.item)}</td><td class="num">${c.amount==null||c.amount===""?"확인 필요":Number(c.amount).toLocaleString()}</td><td>${esc(c.vendor)}</td><td>${esc(c.note)}</td><td><button class="x" data-del="${i}" aria-label="삭제">×</button></td></tr>`).join(""):`<tr><td colspan="5" class="empty">견적 항목이 없어요. "@비용 견적 항목 쪼개줘"로 시작해보세요.</td></tr>`}</tbody>
+      ${list.length?`<tfoot><tr><td>합계</td><td class="num">${sum.toLocaleString()}</td><td colspan="3" class="hint">${board.project.budget?"총예산 "+esc(board.project.budget):""}</td></tr></tfoot>`:""}</table></div>
+      <div class="addrow"><input id="c-item" placeholder="항목"><input id="c-amount" inputmode="numeric" placeholder="금액(만원)"><input id="c-vendor" placeholder="업체·근거"><button class="btn" data-add="costs">추가</button></div>`;
+  }else if(tab==="notes"){
+    h=`<div class="stack">${list.length?list.slice().reverse().map((n,ri)=>{const i=list.length-1-ri;return `<div class="note"><div class="row" style="justify-content:space-between"><b>${esc(n.title)}</b><span class="row"><span class="label">${esc(n.date||"")}</span><button class="x" data-del="${i}" aria-label="삭제">×</button></span></div><p>${esc(n.body)}</p></div>`}).join(""):`<div class="empty">회의록이 없어요. 업체 상담 후 메모를 명령창에 붙여넣고 "@기록 회의록으로 정리해줘"라고 해보세요.</div>`}</div>`;
+  }else{
+    h=`<div class="stack">${list.length?list.map((d,i)=>`<div class="todo"><span>${esc(d.text)}</span><span class="label">${esc(d.date||"")}</span><button class="x" data-del="${i}" aria-label="삭제">×</button></div>`).join(""):`<div class="empty">아직 정한 게 없어요.</div>`}
+      <div class="addrow"><input id="add-dec" placeholder="결정한 내용 직접 추가 (예: 욕실 2개 모두 덧방 말고 철거)"><button class="btn" data-add="decisions">추가</button></div></div>`;
+  }
+  P.innerHTML=h;
+}
+const today=()=>new Date().toISOString().slice(0,10);
+$("#panel").addEventListener("click",e=>{
+  const d=e.target.closest("[data-del]"); if(d){board[tab].splice(+d.dataset.del,1);saveBoard();return}
+  const a=e.target.closest("[data-add]"); if(!a) return;
+  const k=a.dataset.add, v=id=>($("#"+id)?.value||"").trim();
+  if(k==="todos"&&v("add-todo")) board.todos.push({text:v("add-todo"),owner:"나",done:false});
+  else if(k==="vendors"&&v("v-name")) board.vendors.push({name:v("v-name"),type:v("v-type"),contact:v("v-contact"),status:v("v-status"),note:""});
+  else if(k==="costs"&&v("c-item")) board.costs.push({item:v("c-item"),amount:v("c-amount")?Number(v("c-amount").replace(/[^\d.]/g,"")):null,vendor:v("c-vendor"),note:""});
+  else if(k==="decisions"&&v("add-dec")) board.decisions.push({text:v("add-dec"),date:today()});
+  else return;
+  saveBoard();
+});
+$("#panel").addEventListener("change",e=>{const c=e.target.closest("input[type=checkbox][data-i]");if(c){board.todos[+c.dataset.i].done=c.checked;saveBoard()}});
+
+/* project spec */
+const SPEC={area:"f-area",budget:"f-budget",start:"f-start",movein:"f-movein",style:"f-style"};
+function renderSpec(){for(const[k,id]of Object.entries(SPEC)){const el=$("#"+id);if(document.activeElement!==el)el.value=board.project?.[k]||""}}
+Object.entries(SPEC).forEach(([k,id])=>$("#"+id).addEventListener("change",e=>{board.project={...board.project,[k]:e.target.value.trim()};saveBoard()}));
+
+function saveBoard(){
+  renderBoard();
+  if(!db) return;
+  const snap=JSON.parse(JSON.stringify(board));
+  writing=writing.then(()=>db.doc("state/board").set(snap)).catch(e=>showStatus(e?.code==="permission_denied"?"이 보드는 보기 전용이에요. 변경은 저장되지 않아요.":"보드 저장에 실패했어요. 잠시 후 다시 시도해주세요.",true));
+}
+
+/* ---------- log ---------- */
+function allLogs(){return [...logs,...localLogs].sort((a,b)=>a.ts-b.ts)}
+function renderLog(){
+  const L=allLogs(), box=$("#loglist");
+  $("#logcount").textContent=L.length?L.length+"건":"";
+  if(!L.length) return;
+  const nearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<60;
+  box.innerHTML=L.map(l=>{
+    const me=l.agent==="me", a=AGENTS[l.agent];
+    const t=new Date(l.ts).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"});
+    const to=l.to&&AGENTS[l.to]?` → <b style="${cvar(l.to)}">${AGENTS[l.to].name}</b>`:"";
+    return `<div class="entry ${me?"me":""} ${l.kind}" style="${me?"":cvar(l.agent)}"><div class="dot">${me?"나":a?.ch||"?"}</div>
+      <div style="min-width:0"><div class="meta"><b>${me?"나":a?.name||l.agent}</b>${to}<span>${t}</span></div><div class="txt">${esc(l.text)}</div></div></div>`;
+  }).join("");
+  if(nearBottom) box.scrollTop=box.scrollHeight;
+}
+async function addLog(entry){
+  const e={ts:Date.now(),...entry};
+  if(db){try{await db.collection("log").add(e);return}catch(err){}}
+  localLogs.push(e); renderLog();
+}
+
+/* ---------- Claude ---------- */
+const status=(t,err)=>{const s=$("#status");s.textContent=t||"";s.classList.toggle("err",!!err)};
+const showStatus=status;
+function ctx(){
+  const b=JSON.parse(JSON.stringify(board));
+  const cut=(arr,n)=>(arr||[]).slice(-n);
+  b.todos=cut(b.todos,30);b.vendors=cut(b.vendors,20);b.costs=cut(b.costs,40);b.notes=cut(b.notes,5).map(n=>({...n,body:String(n.body).slice(0,600)}));b.decisions=cut(b.decisions,20);
+  const recent=allLogs().slice(-10).map(l=>`[${l.agent==="me"?"의뢰인":AGENTS[l.agent]?.name||l.agent}] ${String(l.text).slice(0,400)}`).join("\n");
+  return `오늘 날짜: ${today()}\n현재 프로젝트 보드(JSON):\n${JSON.stringify(b)}\n\n최근 작업 로그:\n${recent||"(없음)"}`;
+}
+const TEAM=IDS.filter(i=>i!=="pm").map(i=>`- ${i} (${AGENTS[i].name}): ${AGENTS[i].desc}`).join("\n");
+const GROUND=`상황: 의뢰인은 한국에서 아파트를 매매했고, 턴키(설계+시공 일괄) 인테리어를 준비 중이다. 지금까지 레퍼런스만 모았고 업체 컨택이나 준비는 아직 못 했다.
+공통 규칙: 너는 웹 검색을 못 한다. 실제 업체명, 전화번호, 특정 업체 가격을 지어내지 마라. 업체 정보는 의뢰인이 알려준 것만 쓴다. 시세나 금액은 범위로 말하고 '현장 견적으로 확인 필요'라고 단다. 법·제도는 확실한 것만 말하고 애매하면 확인처를 알려준다. 한국어 존댓말, 실무적으로 구체적으로.`;
+
+function parseAgent(text){
+  const m=text.match(/```json\s*([\s\S]*?)```/)||text.match(/```json\s*([\s\S]*)$/);
+  const report=text.split("```json")[0].trim();
+  let data={}; if(m){try{data=JSON.parse(m[1])}catch(e){}}
+  return {report,data};
+}
+function apply(id,data){
+  const arr=x=>Array.isArray(x)?x:[];
+  arr(data.todos).forEach(t=>t?.text&&board.todos.push({text:String(t.text),owner:IDS.includes(t.owner)?t.owner:(t.owner||id),done:false}));
+  arr(data.vendors).forEach(v=>v?.name&&board.vendors.push({name:String(v.name),type:v.type||"",contact:v.contact||"",status:v.status||"",note:v.note||""}));
+  arr(data.costs).forEach(c=>c?.item&&board.costs.push({item:String(c.item),amount:typeof c.amount==="number"?c.amount:null,vendor:c.vendor||AGENTS[id].name+" 추정",note:c.note||""}));
+  arr(data.notes).forEach(n=>n?.title&&board.notes.push({title:String(n.title),body:String(n.body||""),date:today()}));
+  arr(data.decisions).forEach(d=>d?.text&&board.decisions.push({text:String(d.text),date:today()}));
+  const n=arr(data.todos).length+arr(data.vendors).length+arr(data.costs).length+arr(data.notes).length+arr(data.decisions).length;
+  if(n) saveBoard();
+  return n;
+}
+async function runAgent(id,task,from){
+  const a=AGENTS[id];
+  if(from) wire(from,id);
+  setRoom(id,"working","생각 중…");
+  status(`${a.name} 작업 중…`);
+  const prompt=`너는 '우리집 인테리어 TF'의 ${a.name} 담당이다. 역할: ${a.desc}
+${GROUND}
+다른 팀원: ${IDS.filter(i=>i!==id).map(i=>`${i}(${AGENTS[i].name})`).join(", ")}
+
+${ctx()}
+
+받은 지시${from?` (${AGENTS[from]?.name||"의뢰인"}에게서)`:""}: ${task}
+
+출력 형식:
+1) 먼저 의뢰인에게 보여줄 보고를 쓴다. 최대 15줄, 불릿 사용 가능, 마크다운 제목·굵게 표시는 쓰지 말 것.
+2) 그 다음 \`\`\`json 코드블록 하나로 보드에 반영할 내용을 쓴다. 형식:
+{"todos":[{"text":"","owner":"pm|research|contract|cost|visual|record|나"}],"vendors":[{"name":"","type":"","contact":"","status":"","note":""}],"costs":[{"item":"","amount":숫자(만원, 범위면 중간값) 또는 null,"note":"범위·근거"}],"notes":[{"title":"","body":""}],"decisions":[{"text":""}],"handoff":{"to":"팀원 id","message":"그 팀원에게 넘길 구체 지시"} 또는 null}
+- 보드에 이미 있는 항목은 다시 넣지 않는다. vendors는 의뢰인이 알려준 업체만. notes는 회의록을 정리하라는 지시일 때만. decisions는 의뢰인이 확정한 것만.
+- handoff는 다른 팀원이 이어서 해야 할 일이 분명할 때만.`;
+  try{
+    const {text}=await sample(prompt,{signal:ctl.signal,cache:false,onText:({text})=>setRoom(id,"working",text.split("```json")[0].trim()||"정리 중…")});
+    const {report,data}=parseAgent(text);
+    setRoom(id,"done",report);
+    await addLog({agent:id,kind:"report",text:report});
+    const n=apply(id,data);
+    if(n) status(`${a.name}: 보드에 ${n}건 반영`);
+    return data.handoff&&IDS.includes(data.handoff.to)&&data.handoff.to!==id?data.handoff:null;
+  }catch(e){
+    setRoom(id,"idle",e.text||"");
+    throw e;
+  }
+}
+function errCopy(e){
+  return ({cancelled:"멈췄어요.",not_granted:"Claude 사용을 허용해야 TF가 일할 수 있어요. 페이지를 새로고침하면 다시 물어봐요.",rate_limited:"요청이 많아요. 잠시 후 다시 지시해주세요."})[e?.code]||"작업 중 문제가 생겼어요. 다시 지시해주세요.";
+}
+async function command(cmd){
+  running=true; ctl=new AbortController();
+  $("#send").disabled=true; $("#stop").hidden=false; $("#planstate").textContent="작업 중";
+  IDS.forEach(i=>setRoom(i,"idle"));
+  await addLog({agent:"me",kind:"command",text:cmd});
+  try{
+    let assignments=[];
+    const m=cmd.match(/^@(\S+)\s*([\s\S]*)$/);
+    const direct=m&&(ALIAS[m[1].toLowerCase()]||IDS.find(i=>AGENTS[i].name.startsWith(m[1])));
+    if(direct&&direct!=="pm"){
+      assignments=[{agent:direct,task:m[2]||cmd}];
+      setRoom("pm","done",`${AGENTS[direct].name}에게 바로 전달했어요.`);
+    }else{
+      const body=direct==="pm"?m[2]:cmd;
+      setRoom("pm","working","지시 읽는 중…"); status("총괄 PM이 일을 나누는 중…");
+      const pmPlan=await sample.json(`너는 '우리집 인테리어 TF'의 총괄 PM이다.
+${GROUND}
+팀원:
+${TEAM}
+
+${ctx()}
+
+의뢰인 지시: "${body}"
+
+할 일: 지시를 처리할 팀원을 1~3명 고르고 각자에게 구체적 지시를 쓴다. 순서가 중요하면 먼저 할 팀원을 앞에 둔다. 의뢰인이 업체 정보나 상담 메모를 줬다면 record에게 보드 정리를 맡긴다.
+JSON만 출력: {"reply":"의뢰인에게 할 말 2~3문장(무엇을 누구에게 맡겼는지)","assignments":[{"agent":"research|contract|cost|visual|record","task":"구체 지시"}]}`,{signal:ctl.signal,cache:false});
+      assignments=(pmPlan?.assignments||[]).filter(x=>IDS.includes(x.agent)&&x.agent!=="pm").slice(0,3);
+      const reply=pmPlan?.reply||"팀원에게 나눠서 진행할게요.";
+      setRoom("pm","done",reply);
+      await addLog({agent:"pm",kind:"assign",text:reply+(assignments.length?"\n"+assignments.map(x=>`· ${AGENTS[x.agent].name}: ${x.task}`).join("\n"):"")});
+    }
+    let hops=0;
+    const queue=assignments.map(x=>({...x,from:direct&&direct!=="pm"?null:"pm"}));
+    while(queue.length){
+      const x=queue.shift();
+      const h=await runAgent(x.agent,x.task,x.from);
+      if(h&&hops<2){
+        hops++;
+        await addLog({agent:x.agent,kind:"handoff",to:h.to,text:h.message});
+        queue.unshift({agent:h.to,task:h.message,from:x.agent});
+      }
+    }
+    status("완료. 보드를 확인해보세요.");
+  }catch(e){
+    status(errCopy(e),e?.code!=="cancelled");
+  }finally{
+    running=false; $("#send").disabled=false; $("#stop").hidden=true; $("#planstate").textContent="대기 중";
+    plan.querySelectorAll(".room.working").forEach(r=>setRoom(r.dataset.agent,"idle"));
+  }
+}
+$("#stop").onclick=()=>ctl?.abort();
+$("#cmdform").addEventListener("submit",e=>{
+  e.preventDefault();
+  const v=ta.value.trim(); if(!v||running) return;
+  if(!sample){status("이 화면에서는 Claude를 부를 수 없어요. claude.ai에서 열어주세요.",true);return}
+  ta.value=""; command(v);
+});
+
+/* ---------- boot ---------- */
+renderBoard(); renderSpec();
+(async()=>{
+  const c=window.claude;
+  if(!c?.use){
+    const bn=$("#banner"); bn.hidden=false;
+    bn.textContent="이 화면은 claude.ai 아티팩트로 열었을 때만 TF가 일해요. 지금은 미리보기예요.";
+    return;
+  }
+  const [d,s]=await Promise.all([c.use("db"),c.use("sample")]);
+  db=d; sample=s;
+  if(!sample){const bn=$("#banner");bn.hidden=false;bn.textContent="Claude 호출을 쓸 수 없는 화면이에요. 보드는 볼 수 있지만 TF에 지시할 수는 없어요.";}
+  if(!db){const bn=$("#banner");bn.hidden=false;bn.textContent=(bn.textContent?bn.textContent+" ":"")+"로그인하면 보드와 로그가 저장돼요. 지금은 이 창을 닫으면 사라져요.";return}
+  const timer=setTimeout(()=>status("저장된 보드를 아직 못 불러왔어요. 연결을 확인 중이에요."),10000);
+  db.doc("state/board").onSnapshot(snap=>{
+    if(!snap.metadata.fromCache){clearTimeout(timer); if($("#status").textContent.startsWith("저장된 보드")) status("");}
+    const data=snap.exists?snap.data():null;
+    if(data){const d=structuredClone(data);board={...structuredClone(EMPTY_BOARD),...d,project:d.project||{}};}
+    renderBoard(); renderSpec();
+  },()=>{clearTimeout(timer);status("보드를 불러오지 못했어요.",true)});
+  db.collection("log").orderBy("ts","desc").limit(80).onSnapshot(snap=>{
+    logs=snap.docs.map(x=>x.data()); localLogs=[]; renderLog();
+  },()=>{});
+})();
+window.addEventListener("resize",()=>{$("#wires").innerHTML=""});
+})();
+</script>
