@@ -7,18 +7,18 @@
 :root{
   --bg:#ECEFEA; --surface:#FFFFFF; --sunk:#F5F7F3; --ink:#1D2320; --muted:#66706A; --line:#D3D9D1; --wall:#2A312D;
   --accent:#2C58C9; --accent-ink:#FFFFFF; --ok:#2F7D4F; --warn:#B7791F; --bad:#B4413A;
-  --a-pm:#2C58C9; --a-research:#0F8B8D; --a-contract:#7A4FB5; --a-cost:#B7791F; --a-visual:#C2477A; --a-record:#55704B;
+  --a-pm:#2C58C9; --a-research:#0F8B8D; --a-contract:#7A4FB5; --a-cost:#B7791F; --a-visual:#C2477A; --a-record:#55704B; --a-report:#3E4A8C;
   --sans:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#151917; --surface:#1E2421; --sunk:#191E1B; --ink:#E6EBE6; --muted:#9AA49D; --line:#323A35; --wall:#AEB8B1;
   --accent:#7D9EF2; --accent-ink:#0E1630; --ok:#6BC28E; --warn:#E3B05C; --bad:#E58A83;
-  --a-pm:#7D9EF2; --a-research:#4EC3C4; --a-contract:#B394E3; --a-cost:#E3B05C; --a-visual:#EE85B0; --a-record:#9BBE8D; color-scheme:dark}}
+  --a-pm:#7D9EF2; --a-research:#4EC3C4; --a-contract:#B394E3; --a-cost:#E3B05C; --a-visual:#EE85B0; --a-record:#9BBE8D; --a-report:#A3AEEB; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#151917; --surface:#1E2421; --sunk:#191E1B; --ink:#E6EBE6; --muted:#9AA49D; --line:#323A35; --wall:#AEB8B1;
   --accent:#7D9EF2; --accent-ink:#0E1630; --ok:#6BC28E; --warn:#E3B05C; --bad:#E58A83;
-  --a-pm:#7D9EF2; --a-research:#4EC3C4; --a-contract:#B394E3; --a-cost:#E3B05C; --a-visual:#EE85B0; --a-record:#9BBE8D; color-scheme:dark}
+  --a-pm:#7D9EF2; --a-research:#4EC3C4; --a-contract:#B394E3; --a-cost:#E3B05C; --a-visual:#EE85B0; --a-record:#9BBE8D; --a-report:#A3AEEB; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.55;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
@@ -48,11 +48,11 @@ button{cursor:pointer}
 .planbox{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
 .planhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .plan{position:relative;display:grid;grid-template-columns:1fr 1.25fr 1fr;grid-template-rows:auto auto auto;
-  grid-template-areas:"research pm pm" "record pm pm" "visual contract cost";border:4px solid var(--wall);background:var(--sunk)}
+  grid-template-areas:"research pm pm" "record pm pm" "visual contract cost" "report report report";border:4px solid var(--wall);background:var(--sunk)}
 .room{position:relative;border:1.5px solid var(--wall);margin:-0.75px;padding:12px;min-height:150px;display:flex;flex-direction:column;gap:8px;min-width:0;background:var(--surface);transition:background .3s}
 .room[data-agent="pm"]{grid-area:pm;min-height:200px}
 .room[data-agent="research"]{grid-area:research}.room[data-agent="record"]{grid-area:record}
-.room[data-agent="visual"]{grid-area:visual}.room[data-agent="contract"]{grid-area:contract}.room[data-agent="cost"]{grid-area:cost}
+.room[data-agent="report"]{grid-area:report;min-height:120px}.room[data-agent="visual"]{grid-area:visual}.room[data-agent="contract"]{grid-area:contract}.room[data-agent="cost"]{grid-area:cost}
 .room::after{content:"";position:absolute;width:28px;height:28px;border:1.5px solid var(--line);border-left:0;border-bottom:0;border-radius:0 28px 0 0;right:10px;bottom:-1px;opacity:.7}
 .room.working{background:color-mix(in srgb,var(--c) 9%,var(--surface))}
 .roomtag{display:flex;justify-content:space-between;gap:6px;font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.04em}
@@ -72,7 +72,7 @@ button{cursor:pointer}
 #wires path{fill:none;stroke-width:2.5;stroke-dasharray:7 6;animation:flow .8s linear infinite}
 @keyframes flow{to{stroke-dashoffset:-26}}
 @media (max-width:640px){
-  .plan{grid-template-columns:1fr 1fr;grid-template-areas:"pm pm" "research record" "visual contract" "cost cost"}
+  .plan{grid-template-columns:1fr 1fr;grid-template-areas:"pm pm" "research record" "visual contract" "cost report"}
   .room{min-height:130px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -126,6 +126,17 @@ tfoot td{font-weight:700;border-bottom:0}
 .addrow{display:flex;gap:6px;flex-wrap:wrap}
 .addrow input{flex:1 1 140px;min-width:0;border:1px solid var(--line);border-radius:6px;background:var(--sunk);padding:6px 9px}
 .stack{display:flex;flex-direction:column;gap:8px}
+.rep{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.rep > div{min-width:0;flex:1 1 220px}
+.rep b{display:block}
+.rep small{color:var(--muted);font-size:12px;display:block;overflow-wrap:anywhere}
+.viewer{position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--ink) 45%,transparent);display:flex;align-items:stretch;justify-content:center;
+  padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.viewer[hidden]{display:none}
+.viewer .sheet{background:var(--surface);border-radius:10px;width:min(980px,100%);display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--line)}
+.viewer .bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid var(--line)}
+.viewer .bar b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 200px}
+.viewer iframe{flex:1;width:100%;border:0;background:#fff}
 </style>
 
 <div class="wrap">
@@ -193,6 +204,20 @@ tfoot td{font-weight:700;border-bottom:0}
   </section>
 </div>
 
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-labelledby="v-title">
+  <div class="sheet">
+    <div class="bar">
+      <b id="v-title"></b>
+      <div class="row">
+        <span class="hint" id="v-msg"></span>
+        <button class="btn" id="v-save" type="button">HTML 파일로 저장</button>
+        <button class="btn" id="v-close" type="button">닫기</button>
+      </div>
+    </div>
+    <iframe id="v-frame" sandbox title="보고서 미리보기"></iframe>
+  </div>
+</div>
+
 <script>
 (function(){
 const AGENTS = {
@@ -207,20 +232,23 @@ const AGENTS = {
   visual:   {name:"비주얼", room:"작은방", dim:"2.7 × 3.0m", ch:"보", role:"스타일·컬러·자재 톤을 맞춰요",
              desc:"의뢰인의 레퍼런스와 취향을 스타일 키워드, 컬러 팔레트, 바닥·벽·문·주방 마감 자재 방향으로 정리하고 업체에 전달할 디자인 브리프를 만든다."},
   record:   {name:"기록·연락", room:"서재", dim:"2.4 × 3.0m", ch:"기", role:"회의록·업체 연락처·할 일 담당",
-             desc:"미팅·상담 내용을 회의록으로 정리하고, 업체 연락처와 진행 상태를 관리하며, 다음 할 일을 담당자와 함께 정리한다."}
+             desc:"미팅·상담 내용을 회의록으로 정리하고, 업체 연락처와 진행 상태를 관리하며, 다음 할 일을 담당자와 함께 정리한다."},
+  report:   {name:"보고서", room:"발코니", dim:"1.5 × 8.4m", ch:"문", role:"요청하면 물어본 내용을 HTML 한 장 보고서로 만들어요",
+             desc:"의뢰인이 보고서·한 장 정리·문서를 요청할 때만 일한다. 질문과 보드 데이터, 다른 팀원의 보고를 모아 인쇄·공유용 HTML 한 장 보고서를 만든다."}
 };
 const IDS = Object.keys(AGENTS);
-const ALIAS = {"총괄":"pm","pm":"pm","리서치":"research","찾기":"research","계약":"contract","비용":"cost","견적":"cost","비주얼":"visual","디자인":"visual","기록":"record","연락":"record","회의록":"record"};
+const ALIAS = {"총괄":"pm","pm":"pm","리서치":"research","찾기":"research","계약":"contract","비용":"cost","견적":"cost","비주얼":"visual","디자인":"visual","기록":"record","연락":"record","회의록":"record","보고서":"report","보고":"report","리포트":"report"};
 const PRESETS = [
   "턴키 업체 알아보는 것부터 입주까지 해야 할 일 순서대로 정리해줘",
   "@비용 32평 아파트 턴키 견적 항목을 공정별로 쪼개줘",
   "@계약 턴키 계약 전에 꼭 확인할 조항 체크리스트 만들어줘",
   "@리서치 괜찮은 턴키 업체 고르는 기준이랑 상담 때 물어볼 질문 정리해줘",
-  "@비주얼 화이트 우드 미니멀 스타일로 자재·컬러 방향 잡아줘"
+  "@비주얼 화이트 우드 미니멀 스타일로 자재·컬러 방향 잡아줘",
+  "@보고서 지금까지 정리된 내용으로 턴키 준비 현황 한 장 보고서 만들어줘"
 ];
 const EMPTY_BOARD = {project:{}, todos:[], vendors:[], costs:[], notes:[], decisions:[]};
 
-let db=null, sample=null, board=structuredClone(EMPTY_BOARD), logs=[], localLogs=[];
+let db=null, sample=null, downloads=null, board=structuredClone(EMPTY_BOARD), logs=[], localLogs=[], reports=[];
 let running=false, ctl=null, writing=Promise.resolve();
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -266,10 +294,10 @@ PRESETS.forEach(t=>{const b=document.createElement("button");b.type="button";b.c
 ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){e.preventDefault();$("#cmdform").requestSubmit()}});
 
 /* ---------- board ---------- */
-const TABS=[["todos","할 일"],["vendors","업체·연락처"],["costs","예산·견적"],["notes","회의록"],["decisions","결정사항"]];
+const TABS=[["todos","할 일"],["vendors","업체·연락처"],["costs","예산·견적"],["notes","회의록"],["decisions","결정사항"],["reports","보고서"]];
 let tab="todos"; try{tab=localStorage.getItem("tf-tab")||tab}catch(e){}
 function renderTabs(){
-  $("#tabs").innerHTML=TABS.map(([k,l])=>`<button class="tab" role="tab" data-k="${k}" aria-selected="${k===tab}">${l}<span class="n">${(board[k]||[]).length}</span></button>`).join("");
+  $("#tabs").innerHTML=TABS.map(([k,l])=>`<button class="tab" role="tab" data-k="${k}" aria-selected="${k===tab}">${l}<span class="n">${(k==="reports"?reports:board[k]||[]).length}</span></button>`).join("");
 }
 $("#tabs").onclick=e=>{const b=e.target.closest(".tab");if(!b)return;tab=b.dataset.k;try{localStorage.setItem("tf-tab",tab)}catch(e){}renderBoard()};
 const ownTag=o=>AGENTS[o]?`<span class="own" style="${cvar(o)}">${AGENTS[o].name}</span>`:(o?`<span class="own">${esc(o)}</span>`:"");
@@ -277,6 +305,10 @@ function renderBoard(){
   renderTabs();
   const P=$("#panel"), list=board[tab]||[];
   let h="";
+  if(tab==="reports"){
+    h=`<div class="stack">${reports.length?reports.map(r=>`<div class="rep"><div><b>${esc(r.title)}</b><small>${new Date(r.ts).toLocaleString("ko-KR",{year:"numeric",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})} · 요청: ${esc(String(r.question||"").slice(0,120))}</small></div><div class="row"><button class="btn primary" data-open="${esc(r.id)}">열기</button><button class="x" data-rdel="${esc(r.id)}" aria-label="삭제">×</button></div></div>`).join(""):`<div class="empty">아직 보고서가 없어요. 명령창에 "@보고서 ○○ 한 장으로 정리해줘"라고 하거나, 지시 끝에 "보고서로 만들어줘"라고 붙여보세요.</div>`}</div>`;
+    P.innerHTML=h; return;
+  }
   if(tab==="todos"){
     h=`<div class="stack">${list.length?list.map((t,i)=>`<div class="todo ${t.done?"done":""}"><input type="checkbox" id="td${i}" data-i="${i}" ${t.done?"checked":""}><span><label for="td${i}">${esc(t.text)}</label></span>${ownTag(t.owner)}<button class="x" data-del="${i}" aria-label="삭제">×</button></div>`).join(""):`<div class="empty">할 일이 없어요. TF에 "해야 할 일 정리해줘"라고 지시해보세요.</div>`}
       <div class="addrow"><input id="add-todo" placeholder="할 일 직접 추가"><button class="btn" data-add="todos">추가</button></div></div>`;
@@ -298,6 +330,8 @@ function renderBoard(){
 }
 const today=()=>new Date().toISOString().slice(0,10);
 $("#panel").addEventListener("click",e=>{
+  const o=e.target.closest("[data-open]"); if(o){openReport(o.dataset.open);return}
+  const rd=e.target.closest("[data-rdel]"); if(rd){deleteReport(rd.dataset.rdel);return}
   const d=e.target.closest("[data-del]"); if(d){board[tab].splice(+d.dataset.del,1);saveBoard();return}
   const a=e.target.closest("[data-add]"); if(!a) return;
   const k=a.dataset.add, v=id=>($("#"+id)?.value||"").trim();
@@ -382,7 +416,7 @@ async function runAgent(id,task,from){
   status(`${a.name} 작업 중…`);
   const prompt=`너는 '우리집 인테리어 TF'의 ${a.name} 담당이다. 역할: ${a.desc}
 ${GROUND}
-다른 팀원: ${IDS.filter(i=>i!==id).map(i=>`${i}(${AGENTS[i].name})`).join(", ")}
+다른 팀원: ${IDS.filter(i=>i!==id&&i!=="report").map(i=>`${i}(${AGENTS[i].name})`).join(", ")}
 
 ${ctx()}
 
@@ -401,12 +435,93 @@ ${ctx()}
     await addLog({agent:id,kind:"report",text:report});
     const n=apply(id,data);
     if(n) status(`${a.name}: 보드에 ${n}건 반영`);
-    return data.handoff&&IDS.includes(data.handoff.to)&&data.handoff.to!==id?data.handoff:null;
+    return data.handoff&&IDS.includes(data.handoff.to)&&!["report","pm"].includes(data.handoff.to)&&data.handoff.to!==id?data.handoff:null;
   }catch(e){
     setRoom(id,"idle",e.text||"");
     throw e;
   }
 }
+/* ---------- 보고서 팀원 ---------- */
+function reportCtx(){
+  const b=JSON.parse(JSON.stringify(board));
+  b.notes=(b.notes||[]).slice(-8).map(n=>({...n,body:String(n.body).slice(0,1500)}));
+  const recent=allLogs().slice(-14).map(l=>`[${l.agent==="me"?"의뢰인":AGENTS[l.agent]?.name||l.agent}] ${String(l.text).slice(0,2500)}`).join("\n\n");
+  return `오늘 날짜: ${today()}\n프로젝트 보드 전체(JSON):\n${JSON.stringify(b)}\n\n최근 작업 로그(팀원 보고 포함):\n${recent||"(없음)"}`;
+}
+async function runReport(task,from,question){
+  const a=AGENTS.report;
+  if(from) wire(from,"report");
+  setRoom("report","working","보고서 구성 잡는 중…");
+  status("보고서 팀원이 HTML 보고서를 쓰는 중… (1~2분 걸릴 수 있어요)");
+  const prompt=`너는 '우리집 인테리어 TF'의 보고서 담당이다. 의뢰인이 물어본 내용을 인쇄·공유용 HTML 한 장 보고서로 만든다.
+${GROUND}
+
+${reportCtx()}
+
+의뢰인의 원래 요청: ${question}
+${from&&from!=="me"?`${AGENTS[from]?.name||""}의 지시: ${task}`:""}
+
+보고서 작성 규칙:
+- 의뢰인이 물어본 것에 대한 답이 보고서의 중심이다. 보드와 팀원 보고에 있는 내용을 우선 쓰고, 일반 지식으로 보탠 부분은 "일반 기준·확인 필요"로 구분한다. 없는 업체·금액·연락처를 지어내지 않는다.
+- 구성: 제목, 작성일·작성 TF, 한 줄 결론 → 핵심 요약 3~5개 → 본문(표를 적극 활용: 비교표, 공정별 표, 일정표 등 질문에 맞게) → 리스크·주의할 점 → 다음 할 일(담당·기한) → 근거(어떤 보드 항목·팀원 보고를 썼는지).
+- A4 세로 한 장에 맞게 간결하게. 글자 크기 본문 10~11pt, 여백 18mm 정도, @page { size: A4; margin: 14mm } 포함, 인쇄 시 배경색 유지(print-color-adjust: exact).
+- 완전한 HTML 문서 하나: <!doctype html>부터 </html>까지. CSS는 <style> 안에 인라인. <script> 금지, 외부 이미지 금지. 폰트는 "Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif 순서로 지정. 색은 차분한 남색 계열 포인트 1가지 + 회색.
+- <title>에 보고서 제목을 넣는다.
+
+출력: 먼저 한 줄로 "제목: (보고서 제목)"을 쓰고, 그 다음 \`\`\`html 코드블록 하나에 HTML 전체를 쓴다. 그 밖의 말은 쓰지 않는다.`;
+  try{
+    const {text}=await sample(prompt,{signal:ctl.signal,cache:false,modelTier:"complex",onText:({text})=>{
+      const n=(text.split("```html")[1]||"").length;
+      setRoom("report","working",n?`HTML 작성 중… ${n.toLocaleString()}자`:"보고서 구성 잡는 중…");
+    }});
+    const m=text.match(/```html\s*([\s\S]*?)(```|$)/);
+    let html=m?m[1].trim():"";
+    if(!/<html|<body|<h1/i.test(html)) throw {code:"bad_report",message:"보고서 형식이 아니에요"};
+    html=html.replace(/<script[\s\S]*?<\/script>/gi,"");
+    const title=(text.match(/제목\s*[:：]\s*(.+)/)?.[1]||html.match(/<title>([^<]*)<\/title>/i)?.[1]||"인테리어 TF 보고서").trim().slice(0,80);
+    const rec={ts:Date.now(),title,question:String(question).slice(0,500),html:html.slice(0,200000)};
+    const id=await saveReport(rec);
+    setRoom("report","done",`"${title}" 완성. 보드의 보고서 탭에서 열 수 있어요.`);
+    await addLog({agent:"report",kind:"report",text:`보고서 완성: ${title}`});
+    tab="reports"; renderBoard();
+    openReport(id);
+  }catch(e){
+    setRoom("report","idle",e?.code==="bad_report"?"보고서를 제대로 못 만들었어요. 다시 요청해주세요.":"");
+    if(e?.code==="bad_report"){status("보고서 형식이 깨졌어요. 다시 요청해주세요.",true);return}
+    throw e;
+  }
+}
+async function saveReport(rec){
+  if(db){
+    try{const ref=db.collection("reports").doc();await ref.set(rec);return ref.id}catch(e){}
+  }
+  const id="local-"+rec.ts; reports=[{id,...rec},...reports]; renderBoard(); return id;
+}
+async function deleteReport(id){
+  reports=reports.filter(r=>r.id!==id); renderBoard();
+  if(db&&!id.startsWith("local-")){try{await db.doc("reports/"+id).delete()}catch(e){status("보고서 삭제에 실패했어요.",true)}}
+}
+let openId=null;
+function openReport(id){
+  const r=reports.find(x=>x.id===id); if(!r) return;
+  openId=id;
+  $("#v-title").textContent=r.title; $("#v-msg").textContent="";
+  $("#v-frame").srcdoc=r.html;
+  $("#v-save").hidden=!downloads;
+  $("#viewer").hidden=false; $("#v-close").focus();
+}
+function closeReport(){ $("#viewer").hidden=true; $("#v-frame").srcdoc=""; openId=null; }
+$("#v-close").onclick=closeReport;
+$("#viewer").addEventListener("click",e=>{if(e.target.id==="viewer")closeReport()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#viewer").hidden)closeReport()});
+$("#v-save").onclick=async()=>{
+  const r=reports.find(x=>x.id===openId); if(!r||!downloads) return;
+  const name=(r.title.replace(/[\\/:*?"<>|]/g," ").trim()||"보고서")+".html";
+  try{await downloads.save({filename:name,data:new Blob([r.html],{type:"text/html"})});$("#v-msg").textContent="저장했어요."}
+  catch(e){$("#v-msg").textContent=e?.code==="declined"?"":"이 화면에서는 저장할 수 없어요."}
+};
+const wantsReport=t=>/보고서|리포트|한\s*장|한장|문서로|정리본/.test(t);
+
 function errCopy(e){
   return ({cancelled:"멈췄어요.",not_granted:"Claude 사용을 허용해야 TF가 일할 수 있어요. 페이지를 새로고침하면 다시 물어봐요.",rate_limited:"요청이 많아요. 잠시 후 다시 지시해주세요."})[e?.code]||"작업 중 문제가 생겼어요. 다시 지시해주세요.";
 }
@@ -434,17 +549,20 @@ ${ctx()}
 
 의뢰인 지시: "${body}"
 
-할 일: 지시를 처리할 팀원을 1~3명 고르고 각자에게 구체적 지시를 쓴다. 순서가 중요하면 먼저 할 팀원을 앞에 둔다. 의뢰인이 업체 정보나 상담 메모를 줬다면 record에게 보드 정리를 맡긴다.
-JSON만 출력: {"reply":"의뢰인에게 할 말 2~3문장(무엇을 누구에게 맡겼는지)","assignments":[{"agent":"research|contract|cost|visual|record","task":"구체 지시"}]}`,{signal:ctl.signal,cache:false});
-      assignments=(pmPlan?.assignments||[]).filter(x=>IDS.includes(x.agent)&&x.agent!=="pm").slice(0,3);
+할 일: 지시를 처리할 팀원을 1~3명 고르고 각자에게 구체적 지시를 쓴다. 순서가 중요하면 먼저 할 팀원을 앞에 둔다. 의뢰인이 업체 정보나 상담 메모를 줬다면 record에게 보드 정리를 맡긴다. report는 의뢰인이 보고서·한 장 정리·문서를 요청했을 때만 넣고, 항상 맨 마지막에 둔다(보고서만 원하면 report 혼자도 된다).
+JSON만 출력: {"reply":"의뢰인에게 할 말 2~3문장(무엇을 누구에게 맡겼는지)","assignments":[{"agent":"research|contract|cost|visual|record|report","task":"구체 지시"}]}`,{signal:ctl.signal,cache:false});
+      assignments=(pmPlan?.assignments||[]).filter(x=>IDS.includes(x.agent)&&x.agent!=="pm"&&(x.agent!=="report"||wantsReport(body))).slice(0,4);
+      if(wantsReport(body)&&!assignments.some(x=>x.agent==="report")) assignments.push({agent:"report",task:body});
       const reply=pmPlan?.reply||"팀원에게 나눠서 진행할게요.";
       setRoom("pm","done",reply);
       await addLog({agent:"pm",kind:"assign",text:reply+(assignments.length?"\n"+assignments.map(x=>`· ${AGENTS[x.agent].name}: ${x.task}`).join("\n"):"")});
     }
     let hops=0;
-    const queue=assignments.map(x=>({...x,from:direct&&direct!=="pm"?null:"pm"}));
+    const queue=assignments.filter(x=>x.agent!=="report").map(x=>({...x,from:direct&&direct!=="pm"?null:"pm"}));
+    const rep=assignments.find(x=>x.agent==="report");
     while(queue.length){
       const x=queue.shift();
+      if(x.agent==="report") continue;
       const h=await runAgent(x.agent,x.task,x.from);
       if(h&&hops<2){
         hops++;
@@ -452,6 +570,7 @@ JSON만 출력: {"reply":"의뢰인에게 할 말 2~3문장(무엇을 누구에�
         queue.unshift({agent:h.to,task:h.message,from:x.agent});
       }
     }
+    if(rep) await runReport(rep.task,direct==="report"?null:(assignments.length>1?assignments[assignments.length-2].agent:"pm"),cmd.replace(/^@\S+\s*/,""));
     status("완료. 보드를 확인해보세요.");
   }catch(e){
     status(errCopy(e),e?.code!=="cancelled");
@@ -477,8 +596,8 @@ renderBoard(); renderSpec();
     bn.textContent="이 화면은 claude.ai 아티팩트로 열었을 때만 TF가 일해요. 지금은 미리보기예요.";
     return;
   }
-  const [d,s]=await Promise.all([c.use("db"),c.use("sample")]);
-  db=d; sample=s;
+  const [d,s,dl]=await Promise.all([c.use("db"),c.use("sample"),c.use("downloads")]);
+  db=d; sample=s; downloads=dl;
   if(!sample){const bn=$("#banner");bn.hidden=false;bn.textContent="Claude 호출을 쓸 수 없는 화면이에요. 보드는 볼 수 있지만 TF에 지시할 수는 없어요.";}
   if(!db){const bn=$("#banner");bn.hidden=false;bn.textContent=(bn.textContent?bn.textContent+" ":"")+"로그인하면 보드와 로그가 저장돼요. 지금은 이 창을 닫으면 사라져요.";return}
   const timer=setTimeout(()=>status("저장된 보드를 아직 못 불러왔어요. 연결을 확인 중이에요."),10000);
@@ -488,6 +607,9 @@ renderBoard(); renderSpec();
     if(data){const d=structuredClone(data);board={...structuredClone(EMPTY_BOARD),...d,project:d.project||{}};}
     renderBoard(); renderSpec();
   },()=>{clearTimeout(timer);status("보드를 불러오지 못했어요.",true)});
+  db.collection("reports").orderBy("ts","desc").limit(50).onSnapshot(snap=>{
+    reports=[...snap.docs.map(x=>({id:x.id,...x.data()})),...reports.filter(r=>r.id.startsWith("local-"))]; renderBoard();
+  },()=>{});
   db.collection("log").orderBy("ts","desc").limit(80).onSnapshot(snap=>{
     logs=snap.docs.map(x=>x.data()); localLogs=[]; renderLog();
   },()=>{});
