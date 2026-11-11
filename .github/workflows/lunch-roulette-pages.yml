@@ -8,6 +8,7 @@ on:
     paths:
       - "lunch-roulette/web/**"
       - "lunch-roulette/data/**"
+      - "ai-gallery/web/**"
       - ".github/workflows/lunch-roulette-pages.yml"
   workflow_dispatch:
 
@@ -34,6 +35,8 @@ jobs:
           mkdir -p _site/lunch-roulette
           cp -r lunch-roulette/web/. _site/lunch-roulette/
           cp -r lunch-roulette/data _site/lunch-roulette/data
+          mkdir -p _site/ai-gallery
+          cp -r ai-gallery/web/. _site/ai-gallery/
           # 루트로 들어오면 룰렛으로 이동
           echo '<meta http-equiv="refresh" content="0; url=lunch-roulette/">' > _site/index.html
 

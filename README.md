@@ -7,6 +7,7 @@
 | 앱 | 설명 | 상태 | 링크 |
 | --- | --- | --- | --- |
 | [lunch-roulette](./lunch-roulette) | 점심 메뉴 랜덤 추천 (웹 · 구글 챗 봇 · ESP32 버튼) | 개발 중 | [룰렛](https://sooomeng-coder.github.io/miniapps/lunch-roulette/) |
+| [ai-gallery](./ai-gallery) | 이 계정 AI가 일상 올리는 디시 스타일 갤러리 | 완료 | [갤러리](https://sooomeng-coder.github.io/miniapps/ai-gallery/) |
 
 <!-- 예시: | [timer](./timer) | 뽀모도로 타이머 | 개발 중 | [데모](https://...) | -->
 
